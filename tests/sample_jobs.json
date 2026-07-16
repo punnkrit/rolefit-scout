@@ -1,0 +1,68 @@
+[
+  {
+    "_search_query": "Product Manager AI Los Angeles",
+    "job_id": "demo-001",
+    "title": "Product Manager, AI Workflows",
+    "company_name": "Northstar AI",
+    "location": "Los Angeles, CA",
+    "description": "Lead product strategy for AI workflow tools. Requires SQL, analytics, stakeholder management, and experience partnering with engineering. Visa sponsorship available for qualified candidates.",
+    "via": "LinkedIn",
+    "detected_extensions": {"posted_at": "3 days ago"},
+    "apply_options": [{"title": "Apply", "link": "https://example.com/jobs/northstar-ai-pm"}]
+  },
+  {
+    "_search_query": "Product Strategy Manager analytics Seattle",
+    "job_id": "demo-002",
+    "title": "Product Strategy Manager",
+    "company_name": "Cascade Cloud",
+    "location": "Seattle, WA",
+    "description": "Own market research, pricing analysis, and roadmap recommendations for SaaS products. MBA preferred. Sponsorship status is not listed.",
+    "via": "Google Jobs",
+    "detected_extensions": {"posted_at": "1 week ago"},
+    "share_link": "https://example.com/jobs/cascade-product-strategy"
+  },
+  {
+    "_search_query": "Business Operations Manager tech MBA New York",
+    "job_id": "demo-003",
+    "title": "Business Operations Manager",
+    "company_name": "Metro Marketplace",
+    "location": "New York, NY",
+    "description": "Drive marketplace operations, analytics, and executive reporting. Must be authorized to work in the United States without sponsorship.",
+    "via": "Indeed",
+    "detected_extensions": {"posted_at": "2 days ago"},
+    "link": "https://example.com/jobs/metro-bizops"
+  },
+  {
+    "_search_query": "AI Solutions Consultant MBA San Francisco",
+    "job_id": "demo-004",
+    "title": "AI Solutions Consultant",
+    "company_name": "Helio Systems",
+    "location": "San Francisco, CA",
+    "description": "Work with enterprise clients to scope AI solutions, translate business needs into technical requirements, and support product adoption. Open to sponsoring for this role.",
+    "via": "Company Site",
+    "detected_extensions": {"posted_at": "5 days ago"},
+    "link": "https://example.com/jobs/helio-ai-solutions"
+  },
+  {
+    "_search_query": "Product Manager AI Los Angeles",
+    "job_id": "demo-001-duplicate",
+    "title": "Product Manager - AI Workflows",
+    "company_name": "Northstar AI",
+    "location": "Los Angeles, CA",
+    "description": "Lead product strategy for AI workflow tools. Requires SQL, analytics, stakeholder management, and experience partnering with engineering. Visa sponsorship available for qualified candidates.",
+    "via": "Company Site",
+    "detected_extensions": {"posted_at": "3 days ago"},
+    "link": "https://example.com/jobs/northstar-ai-pm-duplicate"
+  },
+  {
+    "_search_query": "Strategy Manager AI products Seattle",
+    "job_id": "demo-005",
+    "title": "Strategy Manager, Defense AI",
+    "company_name": "Aegis Analytics",
+    "location": "Remote",
+    "description": "Lead strategy for defense AI products. U.S. citizenship required. Security clearance required.",
+    "via": "Google Jobs",
+    "detected_extensions": {"posted_at": "today"},
+    "link": "https://example.com/jobs/aegis-strategy"
+  }
+]

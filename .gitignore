@@ -1,0 +1,17 @@
+.cache/
+.venv/
+.tmp/
+.pytest_tmp/
+__pycache__/
+.pytest_cache/
+*.pyc
+.streamlit*.log
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+!.env.demo
+.wrangler/
+outputs/
+*.tar.gz

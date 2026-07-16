@@ -1,0 +1,14 @@
+Demo Candidate
+MBA Candidate, UCLA Anderson School of Management
+
+Experience
+- Product strategy and analytics project lead for an AI workflow prototype.
+- Built SQL and Python dashboards to identify customer adoption trends.
+- Partnered with engineering, design, and sales teams to define product requirements.
+- Prior experience in business operations, market research, and go-to-market strategy.
+
+Skills
+Product management, product strategy, analytics, SQL, Python, Tableau, Excel, stakeholder management, AI products.
+
+Target
+Post-MBA roles in product management, product strategy, product operations, business operations, or AI solutions.

@@ -1,0 +1,29 @@
+{
+  "name": "rolefit-scout",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "admin:dev": "vite --config vite.admin.config.ts",
+    "build": "tsc && vite build && node build/prepare-sites.mjs",
+    "build:demo": "tsc && vite build --mode demo && node build/prepare-sites.mjs",
+    "admin:build": "tsc && vite build --config vite.admin.config.ts",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.37.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "playwright": "^1.60.0",
+    "vite": "^6.4.3",
+    "wrangler": "^4.92.0"
+  }
+}
