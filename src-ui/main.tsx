@@ -9,6 +9,7 @@ import {
   DownloadSimple,
   FileText,
   Gauge,
+  GithubLogo,
   MagnifyingGlass,
   MapPin,
   PencilSimple,
@@ -242,7 +243,18 @@ function App() {
           <h1>Turn your experience into a smarter search.</h1>
         </div>
         <div className="status-cluster">
-          {STATIC_DEMO ? <span className="demo-badge"><span /> Interactive demo · fictional data</span> : <>
+          {STATIC_DEMO ? <>
+            <span className="demo-badge"><span /> Interactive demo · fictional data</span>
+            <a
+              className="source-link"
+              href="https://github.com/punnkrit/rolefit-scout"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View RoleFit Scout source code on GitHub"
+            >
+              <GithubLogo size={18} weight="fill" /> View source
+            </a>
+          </> : <>
             <Toggle label="Demo" checked={Boolean(state.demo_mode)} onChange={(demo_mode) => setState({ ...state, demo_mode })} />
             <Toggle
               label="Live search"

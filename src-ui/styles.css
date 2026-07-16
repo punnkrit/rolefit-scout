@@ -100,6 +100,29 @@ p { color: var(--muted); line-height: 1.6; }
   background: var(--accent-2);
   box-shadow: 0 0 0 4px rgba(143, 178, 159, 0.12);
 }
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+.source-link:hover {
+  border-color: rgba(211, 168, 91, 0.6);
+  background: rgba(211, 168, 91, 0.1);
+}
+.source-link:active { transform: translateY(1px); }
+.source-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 .keys {
   display: grid;
   gap: 4px;
