@@ -83,16 +83,13 @@ p { color: var(--muted); line-height: 1.6; }
   font-size: 0.875rem;
   font-weight: 600;
 }
-.product-description { margin: 5px 0 0; }
 .source-link { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: 0.875rem; padding: 8px; text-decoration: none; }
 .source-link:hover { color: var(--accent); }
-.demo-notice { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, 0.42fr); align-items: center; gap: 32px; border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 20px 24px; margin-bottom: 24px; background: var(--panel); }
-.demo-notice h2 { font-size: 1.125rem; letter-spacing: 0; margin: 0 0 6px; }
+.demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 24px; border-block: 1px solid var(--line); padding: 16px 0; margin-bottom: 16px; }
+.demo-notice h2 { font-size: 1rem; letter-spacing: 0; margin: 0 0 4px; }
 .demo-notice p { margin: 0; max-width: 74ch; }
-.demo-deploy { border-left: 1px solid var(--line); padding-left: 24px; }
+.demo-deploy { flex-shrink: 0; }
 .demo-deploy a { display: inline-flex; gap: 8px; align-items: center; color: var(--accent); font-weight: 600; text-underline-offset: 4px; }
-.demo-deploy p { font-size: 0.875rem; margin-top: 6px; }
-.demo-step-note { margin-bottom: 18px; }
 :is(button, a, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .keys {
   display: grid;
@@ -470,36 +467,32 @@ input:focus, textarea:focus, select:focus {
 }
 .coach-readout {
   display: grid;
-  gap: 10px;
-  margin: 0 0 20px;
-  padding: 16px;
-  border-radius: 8px;
-  background: rgba(143, 178, 159, 0.08);
-  border: 1px solid rgba(143, 178, 159, 0.2);
+  margin: 0 0 24px;
 }
-.coach-readout span {
-  color: var(--accent);
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  margin-bottom: 5px;
-  text-transform: uppercase;
+.coach-readout > div {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.coach-readout h3 {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.6;
 }
 .coach-readout p {
   margin: 0;
   color: var(--text);
 }
 .readout-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  display: grid;
+  gap: 6px;
 }
 .readout-chips b {
-  border-radius: 6px;
-  background: rgba(211, 168, 91, 0.16);
   color: var(--text);
-  padding: 7px 9px;
+  font-weight: 500;
 }
 .edit-stack {
   display: grid;
@@ -507,15 +500,13 @@ input:focus, textarea:focus, select:focus {
   margin-bottom: 16px;
 }
 .edit-stack details {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255,255,255,.035);
-  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 0;
 }
 .edit-stack summary {
   cursor: pointer;
   color: var(--text);
-  font-weight: 700;
+  font-weight: 500;
   padding: 13px 0;
 }
 .edit-stack details[open] {
@@ -1116,8 +1107,7 @@ input[type="range"] { accent-color: var(--accent); padding: 0; }
   .job-detail-panel { min-height: auto; }
   .status-cluster { justify-content: flex-start; }
   .briefing-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .demo-notice { grid-template-columns: 1fr; gap: 16px; }
-  .demo-deploy { border-left: 0; border-top: 1px solid var(--line); padding: 14px 0 0; }
+  .demo-notice { flex-wrap: wrap; gap: 12px; }
 }
 @media (max-width: 720px) {
   .app-shell { padding: 18px 12px 40px; }
@@ -1125,7 +1115,8 @@ input[type="range"] { accent-color: var(--accent); padding: 0; }
   .workflow button { flex: 0 0 auto; padding: 0 14px; min-height: 48px; }
   .workflow button > svg:last-child:not(:first-child) { display: none; }
   .briefing-panel { grid-template-columns: 1fr; }
-  .demo-notice { padding: 18px; }
+  .demo-notice { padding: 16px 0; }
+  .coach-readout > div { grid-template-columns: 1fr; gap: 8px; }
   .panel, .panel.spacious { padding: 18px; }
   .profile-head, .matches-head, .tracker-head { flex-wrap: wrap; }
   .form-grid,

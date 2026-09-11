@@ -244,7 +244,6 @@ function App() {
       <header className="topbar">
         <div>
           <h1>RoleFit Scout</h1>
-          <p className="product-description">Resume to search strategy to role shortlist.</p>
         </div>
         <div className="status-cluster">
           {STATIC_DEMO ? <span className="demo-badge">Demo mode</span> : <>
@@ -267,12 +266,11 @@ function App() {
 
       {STATIC_DEMO && <section className="demo-notice" aria-labelledby="demo-title">
         <div>
-          <h2 id="demo-title">You're exploring an interactive demo.</h2>
-          <p>The candidate, companies, jobs, and fit scores are fictional. Explore the workflow with sample data; this site does not run AI analysis or live job searches.</p>
+          <h2 id="demo-title">Interactive demo</h2>
+          <p>Fictional data. No live searches or AI analysis.</p>
         </div>
         <div className="demo-deploy">
           <a href={`${SOURCE_URL}#deploy-the-live-version`} target="_blank" rel="noreferrer">Deploy the live version <ArrowSquareOut size={17} /></a>
-          <p>Full source and setup instructions on GitHub.</p>
         </div>
       </section>}
 
@@ -399,9 +397,7 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
   return (
     <div className="two-column">
       <section className="panel">
-        <p className="eyebrow">Step 01</p>
         <h2>Resume intake</h2>
-        {STATIC_DEMO && <p className="field-hint demo-step-note">Try sample text to walk through the flow. Profile extraction always returns the fictional candidate; it does not analyze your resume.</p>}
         <label
           className={dragActive ? "dropzone drag-active" : "dropzone"}
           onDragEnter={(event) => {
@@ -456,7 +452,6 @@ function PreferencesStep({ state, onSave }: { state: GraphState; onSave: (prefer
   const formReady = canProceed && canProceedTargets && canProceedAdjacent && canProceedIndustries;
   return (
     <section className="panel spacious">
-      <p className="eyebrow">Step 02</p>
       <h2>Search constraints</h2>
       <div className="form-grid">
         <AnyTextField
@@ -546,7 +541,7 @@ function BriefStep({ state, coachThinking, onGenerate, onApply, onChat }: {
       <section className="panel empty-state">
         <PencilSimple size={38} />
         <h2>{STATIC_DEMO ? "Explore a sample brief" : "Generate the coach brief"}</h2>
-        <p>{STATIC_DEMO ? "Load the prepared brief for the fictional candidate. Your edits do not trigger AI generation in this demo." : "The brief turns the resume and constraints into role lanes, scoring guidance, and unresolved questions."}</p>
+        {!STATIC_DEMO && <p>The brief turns the resume and constraints into role lanes, scoring guidance, and unresolved questions.</p>}
         <button className="primary" onClick={onGenerate}>{STATIC_DEMO ? "Load sample brief" : "Generate coach brief"}</button>
       </section>
     );
@@ -555,22 +550,21 @@ function BriefStep({ state, coachThinking, onGenerate, onApply, onChat }: {
   return (
     <div className={SHOW_COACH_CHAT ? "two-column wide-left" : "brief-single"}>
       <section className="panel spacious">
-        <p className="eyebrow">Step 03</p>
         <h2>Role search brief</h2>
         <div className="coach-readout">
           <div>
-            <span>Thesis</span>
+            <h3>Search focus</h3>
             <p>{brief.search_thesis || brief.positioning}</p>
           </div>
           <div>
-            <span>Best lanes</span>
+            <h3>Target roles</h3>
             <div className="readout-chips">
               {(brief.target_role_lanes || []).map((item) => <b key={item}>{item}</b>)}
               {!(brief.target_role_lanes || []).length ? <b>Coach is still calibrating</b> : null}
             </div>
           </div>
           <div>
-            <span>Sponsorship and level</span>
+            <h3>Sponsorship and level</h3>
             <p>{[brief.sponsorship_stance, brief.seniority_calibration].filter(Boolean).join(" · ") || "No special constraint captured yet."}</p>
           </div>
         </div>
@@ -644,7 +638,7 @@ function StrategyStep({ state, onBuild, onSearch }: { state: GraphState; onBuild
       <section className="panel empty-state">
         <Strategy size={38} />
         <h2>{STATIC_DEMO ? "Explore a sample strategy" : "Build the search strategy"}</h2>
-        <p>{STATIC_DEMO ? "Load prepared search lanes for the fictional candidate. Live search is available when you deploy the full app." : "Propose search queries using the approved coach brief and preferences."}</p>
+        {!STATIC_DEMO && <p>Propose search queries using the approved coach brief and preferences.</p>}
         <button className="primary" onClick={onBuild}>{STATIC_DEMO ? "Load sample strategy" : "Build search strategy"}</button>
       </section>
     );
@@ -653,7 +647,6 @@ function StrategyStep({ state, onBuild, onSearch }: { state: GraphState; onBuild
   const edited = parseLanes(laneText, queries);
   return (
     <section className="panel spacious">
-      <p className="eyebrow">Step 04</p>
       <div className="section-head">
         <div>
           <h2>Search strategy</h2>
