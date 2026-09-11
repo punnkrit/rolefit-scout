@@ -2,7 +2,6 @@ import React, { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowSquareOut,
-  BookmarkSimple,
   Briefcase,
   Check,
   CheckCircle,
@@ -16,7 +15,6 @@ import {
   Plus,
   SpinnerGap,
   Strategy,
-  DotsThreeVertical,
   WarningCircle
 } from "@phosphor-icons/react";
 import "./styles.css";
@@ -246,7 +244,7 @@ function App() {
           <h1>RoleFit Scout</h1>
         </div>
         <div className="status-cluster">
-          {STATIC_DEMO ? <span className="demo-badge">Demo mode</span> : <>
+          {!STATIC_DEMO && <>
             <Toggle label="Demo" checked={Boolean(state.demo_mode)} onChange={(demo_mode) => setState({ ...state, demo_mode })} />
             <Toggle
               label="Live search"
@@ -261,6 +259,17 @@ function App() {
           <a className="source-link" href={SOURCE_URL} target="_blank" rel="noreferrer">
             <GithubLogo size={18} weight="fill" /> GitHub source <ArrowSquareOut size={15} />
           </a>
+          <details className="run-menu">
+            <summary>{STATIC_DEMO ? "Demo controls" : "Saved runs"}</summary>
+            <div className="run-menu-content">
+              <Replay onLoad={(loaded) => setState(loaded)} />
+              <button className="secondary" onClick={() => {
+                localStorage.removeItem("career-search-state");
+                setState(STATIC_DEMO ? { demo_mode: true, live_search_enabled: false } : {});
+                setStep("resume");
+              }}>Start over</button>
+            </div>
+          </details>
         </div>
       </header>
 
@@ -278,7 +287,7 @@ function App() {
         {([
           ["resume", "Resume", FileText],
           ["preferences", "Preferences", Gauge],
-          ["brief", "Coach brief", PencilSimple],
+          ["brief", "Search brief", PencilSimple],
           ["strategy", "Strategy", Strategy],
           ["results", "Results", Briefcase]
         ] as const).map(([key, label, Icon]) => {
@@ -293,17 +302,8 @@ function App() {
         })}
       </nav>
 
-      <main id="main" className={step === "results" ? "main-grid results-main" : "main-grid"}>
-        <aside className="briefing-panel">
-          <Progress state={state} complete={complete} onStartOver={() => {
-            localStorage.removeItem("career-search-state");
-            setState(STATIC_DEMO ? { demo_mode: true, live_search_enabled: false } : {});
-            setStep("resume");
-          }} />
-          <Replay onLoad={(loaded) => setState(loaded)} />
-        </aside>
-
-        <section className="workspace">
+      <main id="main">
+        <section className="workspace" aria-busy={Boolean(busy)}>
           {error ? <Notice tone="danger" text={error} /> : null}
           {state.errors?.length ? <Notice tone="warn" text={state.errors[state.errors.length - 1]} /> : null}
           {busy ? <Loading label={busy} /> : null}
@@ -363,12 +363,15 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
 }) {
   const [text, setText] = useState(state.resume_text || "");
   const [dragActive, setDragActive] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     setText(state.resume_text || "");
   }, [state.resume_text]);
 
   async function upload(file: File) {
+    setUploadError("");
+    try {
     if (STATIC_DEMO) {
       if (!file.name.toLowerCase().endsWith(".txt")) {
         throw new Error("The hosted demo accepts pasted text or .txt files. PDF and DOCX parsing requires the private API.");
@@ -385,6 +388,9 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
     const payload = await response.json();
     setText(payload.resume_text);
     onState({ ...state, resume_text: payload.resume_text });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed. Try another file.");
+    }
   }
 
   function handleDrop(event: React.DragEvent<HTMLLabelElement>) {
@@ -395,9 +401,9 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
   }
 
   return (
-    <div className="two-column">
-      <section className="panel">
-        <h2>Resume intake</h2>
+    <div className="two-column resume-layout">
+      <section className="panel resume-input">
+        <h2>{STATIC_DEMO ? "Sample resume" : "Resume"}</h2>
         <label
           className={dragActive ? "dropzone drag-active" : "dropzone"}
           onDragEnter={(event) => {
@@ -420,6 +426,7 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
           <small>{STATIC_DEMO ? "TXT only in this demo" : "PDF, DOCX, or TXT"}</small>
           <input type="file" accept={STATIC_DEMO ? ".txt" : ".pdf,.docx,.txt"} onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} />
         </label>
+        {uploadError && <Notice tone="danger" text={uploadError} />}
         <textarea
           value={text}
           onChange={(event) => {
@@ -430,7 +437,7 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
           aria-label={STATIC_DEMO ? "Sample resume text" : "Resume text"}
           rows={14}
         />
-        <button className="primary" disabled={!text.trim()} onClick={onExtract}>{STATIC_DEMO ? "Load sample profile" : "Extract resume profile"}</button>
+        <div className="form-actions"><button className={state.candidate_profile ? "secondary" : "primary"} disabled={!text.trim()} onClick={onExtract}>{STATIC_DEMO ? "Load sample profile" : "Extract resume profile"}</button></div>
       </section>
       <ProfilePanel profile={state.candidate_profile} onContinue={onContinue} />
     </div>
@@ -451,8 +458,9 @@ function PreferencesStep({ state, onSave }: { state: GraphState; onSave: (prefer
   const canProceedIndustries = anyMode.target_industries || Boolean((prefs.target_industries || []).length);
   const formReady = canProceed && canProceedTargets && canProceedAdjacent && canProceedIndustries;
   return (
-    <section className="panel spacious">
-      <h2>Search constraints</h2>
+    <section className="panel spacious preferences-panel">
+      <h2>Preferences</h2>
+      <fieldset className="preference-group"><legend>Role and industry</legend>
       <div className="form-grid">
         <AnyTextField
           label="Primary goal"
@@ -471,7 +479,7 @@ function PreferencesStep({ state, onSave }: { state: GraphState; onSave: (prefer
           onChange={(target_job_titles) => setPrefs({ ...prefs, target_job_titles })}
         />
         <AnyListField
-          label="Adjacent lanes"
+          label="Related roles"
           values={prefs.acceptable_adjacent_roles}
           placeholder="Type your preference here"
           anyMode={anyMode.acceptable_adjacent_roles}
@@ -487,6 +495,8 @@ function PreferencesStep({ state, onSave }: { state: GraphState; onSave: (prefer
           onChange={(target_industries) => setPrefs({ ...prefs, target_industries })}
         />
       </div>
+      </fieldset>
+      <fieldset className="preference-group"><legend>Location and eligibility</legend>
       <Field label="Locations">
         <SearchableMultiSelect
           options={LOCATION_OPTIONS}
@@ -509,17 +519,18 @@ function PreferencesStep({ state, onSave }: { state: GraphState; onSave: (prefer
           onChange={(value) => setPrefs({ ...prefs, requires_sponsorship: value !== "not_needed" && value !== "unknown", sponsorship_timing: value as Preferences["sponsorship_timing"] })}
         />
       </div>
-      <Field label="Hard exclusions">
+      </fieldset>
+      <Field label="Roles to exclude">
         <textarea value={join(prefs.role_families_to_avoid)} onChange={(e) => setPrefs({ ...prefs, role_families_to_avoid: split(e.target.value) })} rows={3} placeholder="Workforce optimization, dispatch operations" />
       </Field>
       {!formReady ? <p className="validation-note">Choose Any for flexible fields, or type a preference before continuing.</p> : null}
-      <button className="primary" disabled={!formReady} onClick={() => onSave({
+      <div className="form-actions"><button className="primary" disabled={!formReady} onClick={() => onSave({
         ...prefs,
         primary_goal: anyMode.primary_goal ? "" : prefs.primary_goal,
         target_job_titles: anyMode.target_job_titles ? [] : prefs.target_job_titles,
         acceptable_adjacent_roles: anyMode.acceptable_adjacent_roles ? [] : prefs.acceptable_adjacent_roles,
         target_industries: anyMode.target_industries ? [] : prefs.target_industries,
-      })}>Save and continue</button>
+      })}>Continue to search brief</button></div>
     </section>
   );
 }
@@ -596,7 +607,7 @@ function BriefStep({ state, coachThinking, onGenerate, onApply, onChat }: {
             </Field>
           </details>
         </div>
-        <button className="primary" onClick={() => onApply(brief)}>Apply brief</button>
+        <div className="form-actions"><button className="primary" onClick={() => onApply(brief)}>Continue to strategy</button></div>
       </section>
       {SHOW_COACH_CHAT ? <aside className="panel chat-panel">
         <div className="chat-head">
@@ -650,24 +661,22 @@ function StrategyStep({ state, onBuild, onSearch }: { state: GraphState; onBuild
       <div className="section-head">
         <div>
           <h2>Search strategy</h2>
-          <p>{state.search_strategy?.strategy_summary}</p>
+          {!STATIC_DEMO && <p>{state.search_strategy?.strategy_summary}</p>}
         </div>
         <button className="primary" onClick={() => onSearch(edited)}><MagnifyingGlass size={18} /> {STATIC_DEMO ? "Show sample results" : "Run approved search"}</button>
       </div>
       <div className="lane-grid">
         {queries.map((query, index) => (
           <article className="lane-card" key={`${query.query}-${index}`}>
-            <span>{formatStrategyType(query.strategy_type)}</span>
-            <h3>{query.query}</h3>
-            <p>{query.location || "Any supported location"}</p>
-            <small>{query.rationale || query.expected_tradeoff}</small>
+            <div><h3>{query.query}</h3><p>{query.rationale || query.expected_tradeoff}</p></div>
+            <div className="lane-meta"><span>{query.location || "Any location"}</span><small>{formatStrategyType(query.strategy_type)}</small></div>
           </article>
         ))}
       </div>
-      <Field label="Edit lanes: one query | location per line">
+      <details className="strategy-editor"><summary>Edit search queries</summary><Field label="One query | location per line">
         <textarea value={laneText} onChange={(e) => setLaneText(e.target.value)} rows={Math.max(5, queries.length + 1)} />
-      </Field>
-      <Diagnostics diagnostics={state.query_diagnostics || []} />
+      </Field></details>
+      {!!state.query_diagnostics?.length && <details className="strategy-editor"><summary>Search diagnostics</summary><Diagnostics diagnostics={state.query_diagnostics} /></details>}
     </section>
   );
 }
@@ -684,6 +693,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
   const [tab, setTab] = useState("fit");
   const [trackerIds, setTrackerIds] = useState<Set<string>>(() => new Set((state.user_feedback || []).map((item) => item.job_id).filter(Boolean)));
   const [trackerStages, setTrackerStages] = useState<Record<string, string>>({});
+  const [trackerError, setTrackerError] = useState("");
   const pageSize = 5;
 
   const locations = useMemo(() => unique(allJobs.map((job) => job.location).filter(Boolean)), [allJobs]);
@@ -710,6 +720,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
   }, [selected, selectedId]);
 
   async function addToTracker(job: ScoredJob) {
+    setTrackerError("");
     if (trackerIds.has(job.job_id)) return;
     const previousIds = new Set(trackerIds);
     setTrackerIds(new Set([...trackerIds, job.job_id]));
@@ -727,7 +738,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
       onState(updated);
     } catch (error) {
       setTrackerIds(previousIds);
-      console.error(error);
+      setTrackerError("Could not save this role. Please try again.");
     }
   }
 
@@ -735,7 +746,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
     <section className="results-workbench">
       <aside className="panel result-filters">
         <div className="filter-head">
-          <h3>Filters</h3>
+          <h2>Results</h2>
           <button type="button" onClick={() => {
             setQuery("");
             setMinScore(60);
@@ -744,14 +755,15 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
             setSortBy("score");
           }}>Clear all</button>
         </div>
-        <div className="search-box">
+        <div className="result-filter-actions"><div className="search-box">
           <MagnifyingGlass size={18} />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles or companies" />
+          <input aria-label="Search roles or companies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles or companies" />
         </div>
+        <button className="secondary" onClick={() => downloadCsv(state)}><DownloadSimple size={18} /> Export CSV</button></div>
+        <details className="result-filter-options"><summary>Filters</summary><div className="filter-options-grid">
         <label className="range-filter">
-          <span>Match score</span>
+          <span>Minimum fit score <b>{minScore}%</b></span>
           <input type="range" min={0} max={100} value={minScore} onChange={(event) => setMinScore(Number(event.target.value))} />
-          <b>{minScore}%</b>
         </label>
         <Field label="Location">
           <select value={location} onChange={(event) => setLocation(event.target.value)}>
@@ -767,7 +779,8 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
             <option value="Skip">Skip</option>
           </select>
         </Field>
-        <button className="secondary" onClick={() => downloadCsv(state)}><DownloadSimple size={18} /> Export CSV</button>
+
+        </div></details>
       </aside>
 
       <section className="panel match-list-panel">
@@ -791,7 +804,6 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
                 onClick={() => setSelectedId(job.job_id)}
               >
                 <span className="row-rank">{job.rank || filtered.indexOf(job) + 1}</span>
-                <CompanyMark name={job.company} />
                 <span className="row-copy">
                   <b>{job.title}</b>
                   <small>{job.company}</small>
@@ -818,7 +830,6 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
         {selected ? (
           <>
             <div className="detail-hero">
-              <CompanyMark name={selected.company} large />
               <div>
                 <h2>{selected.title}</h2>
                 <p>{selected.company}</p>
@@ -830,12 +841,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
               </div>
             </div>
             <div className="detail-actions">
-              {selected.url ? <a className="secondary" href={selected.url} target="_blank" rel="noreferrer">View job <ArrowSquareOut size={17} /></a> : <button className="secondary" disabled>View job</button>}
-              <button className="secondary" onClick={() => {
-                setTrackerIds(new Set([...trackerIds, selected.job_id]));
-                setTrackerStages((stages) => ({ ...stages, [selected.job_id]: stages[selected.job_id] || "Saved" }));
-              }}><BookmarkSimple size={17} /> Save</button>
-              <button className="secondary"><DotsThreeVertical size={18} /></button>
+              {!STATIC_DEMO && selected.url ? <a className="secondary" href={selected.url} target="_blank" rel="noreferrer">View job <ArrowSquareOut size={17} /></a> : <span className="field-hint">{STATIC_DEMO ? "Fictional listing" : "Original listing unavailable"}</span>}
             </div>
             <div className="detail-tabs">
               {[
@@ -846,6 +852,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
             </div>
             <JobDetailTab job={selected} tab={tab} />
             <div className="detail-footer">
+              {trackerError && <Notice tone="danger" text={trackerError} />}
               <button className="primary" disabled={trackerIds.has(selected.job_id)} onClick={() => addToTracker(selected)}>
                 <Plus size={18} /> {trackerIds.has(selected.job_id) ? "Added to tracker" : "Add to application tracker"}
               </button>
@@ -868,17 +875,13 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
           });
         }}
         onSelect={(job) => {
+          setQuery(""); setMinScore(0); setLocation("all"); setAction("all");
           setSelectedId(job.job_id);
           setTab("fit");
         }}
       />
     </section>
   );
-}
-
-function CompanyMark({ name, large = false }: { name: string; large?: boolean }) {
-  const initial = (name.match(/[A-Za-z0-9]/)?.[0] || "J").toUpperCase();
-  return <span className={large ? "company-mark large" : "company-mark"}>{initial}</span>;
 }
 
 function hydrateScoredJobs(state: GraphState): ScoredJob[] {
@@ -918,7 +921,6 @@ function TrackerPanel({
     <section className="panel tracker-panel">
       <div className="tracker-head">
         <div>
-          <p className="eyebrow">Pipeline</p>
           <h3>Application tracker</h3>
         </div>
         <span>{jobs.length} saved</span>
@@ -932,10 +934,10 @@ function TrackerPanel({
                 <span>{job.company} · {job.location}</span>
               </button>
               <strong>{job.overall_fit_score}%</strong>
-              <select value={stages[job.job_id] || "Saved"} onChange={(event) => onStageChange(job.job_id, event.target.value)}>
+              <select aria-label={`Stage for ${job.title} at ${job.company}`} value={stages[job.job_id] || "Saved"} onChange={(event) => onStageChange(job.job_id, event.target.value)}>
                 {stageOptions.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
               </select>
-              {job.url ? <a className="secondary" href={job.url} target="_blank" rel="noreferrer">Open <ArrowSquareOut size={15} /></a> : <button className="secondary" disabled>Open</button>}
+              {!STATIC_DEMO && job.url ? <a className="secondary" href={job.url} target="_blank" rel="noreferrer">Open <ArrowSquareOut size={15} /></a> : <span className="field-hint">{STATIC_DEMO ? "Sample" : "No link"}</span>}
               <button type="button" className="secondary" onClick={() => onRemove(job.job_id)}>Remove</button>
             </article>
           ))}
@@ -964,7 +966,7 @@ function JobDetailTab({ job, tab }: { job: ScoredJob; tab: string }) {
               {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </section>
           ) : (
-            <p className="muted-copy">No job description text was returned by the search provider for this role. Open the job link to review the original posting.</p>
+            <p className="muted-copy">{STATIC_DEMO ? "No full posting in this sample." : "No full description available. Open the original listing for details."}</p>
           )}
         </div>
         <dl className="detail-facts">
@@ -1009,7 +1011,7 @@ function SponsorshipStatus({ job }: { job: ScoredJob }) {
   const evidence = job.sponsorship_evidence || "The posting does not include explicit sponsorship language.";
   return (
     <section className="sponsorship-status">
-      <span>Sponsorship status</span>
+      <span>Sponsorship risk</span>
       <b>{status}</b>
       <p>{evidence}</p>
     </section>
@@ -1144,31 +1146,15 @@ function ProfilePanel({ profile, onContinue }: { profile?: Record<string, any>; 
     <section className="panel profile-panel">
       <div className="profile-head">
         <div>
-          <p className="eyebrow">Resume profile</p>
           <h2>{profile.name || "Candidate"}</h2>
         </div>
-        {onContinue ? <button className="primary continue-button" onClick={onContinue}>Continue to preferences</button> : null}
       </div>
       <p>{profile.experience_summary}</p>
-      <ChipGroup title="Likely lanes" values={profile.target_functions} />
+      <div className="profile-facts"><ChipGroup title="Target roles" values={profile.target_functions} />
       <ChipGroup title="Strengths" values={profile.strengths_for_search} />
       <ChipGroup title="Skills" values={profile.skills} />
-      <ChipGroup title="Potential gaps" values={profile.potential_gaps} />
-    </section>
-  );
-}
-
-function Progress({ state, complete, onStartOver }: { state: GraphState; complete: Record<Step, boolean>; onStartOver: () => void }) {
-  const cacheLabel = state.cache_run_label || state.cache_run_id || state.cache_run_path;
-  return (
-    <section className="panel compact-panel">
-      <p className="eyebrow">{STATIC_DEMO ? "Demo progress" : "Progress"}</p>
-      <h3>{STATIC_DEMO ? "Sample candidate" : cacheLabel ? "Saved run" : "Working draft"}</h3>
-      <div className="progress-list">
-        {Object.entries(complete).map(([key, value]) => <span key={key} className={value ? "done" : ""}>{key}<b>{value ? "ready" : "pending"}</b></span>)}
-      </div>
-      <small>{cacheLabel || "Results will be cached after backend work runs."}</small>
-      <button className="secondary" onClick={onStartOver}>Start over</button>
+      <ChipGroup title="Potential gaps" values={profile.potential_gaps} /></div>
+      {onContinue ? <div className="form-actions"><button className="primary" onClick={onContinue}>Continue to preferences</button></div> : null}
     </section>
   );
 }
@@ -1228,6 +1214,7 @@ function AnyTextField({ label, value, placeholder, anyMode, onAnyMode, onChange 
         />
         <button
           type="button"
+          aria-pressed={anyMode}
           className={anyMode ? "mini-action selected" : "mini-action"}
           onClick={() => {
             const next = !anyMode;
@@ -1265,6 +1252,7 @@ function AnyListField({ label, values = [], placeholder, anyMode, onAnyMode, onC
         />
         <button
           type="button"
+          aria-pressed={anyMode}
           className={anyMode ? "mini-action selected" : "mini-action"}
           onClick={() => {
             const next = !anyMode;
@@ -1335,8 +1323,7 @@ function SearchableMultiSelect({ options, values, placeholder, onChange }: {
         <div className="multi-select-menu">
           <div className="menu-actions">
             <span>{filtered.length} options</span>
-            <button type="button" onMouseDown={(event) => {
-              event.preventDefault();
+            <button type="button" onClick={() => {
               setOpen(false);
             }}>Done</button>
           </div>
@@ -1347,8 +1334,7 @@ function SearchableMultiSelect({ options, values, placeholder, onChange }: {
                 type="button"
                 className={selected ? "selected" : ""}
                 key={option}
-                onMouseDown={(event) => {
-                  event.preventDefault();
+                onClick={() => {
                   onChange(toggleValue(values, option));
                   setQuery("");
                 }}
@@ -1401,25 +1387,25 @@ function Segmented({ label, value, options, onChange }: { label: string; value: 
   return (
     <div className="segmented-wrap">
       <span>{label}</span>
-      <div className="segmented">{options.map(([key, text]) => <button type="button" className={value === key ? "selected" : ""} key={key} onClick={() => onChange(key)}>{text}</button>)}</div>
+      <div className="segmented">{options.map(([key, text]) => <button type="button" aria-pressed={value === key} className={value === key ? "selected" : ""} key={key} onClick={() => onChange(key)}>{text}</button>)}</div>
     </div>
   );
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
-  return <button className={checked ? "toggle on" : "toggle"} onClick={() => onChange(!checked)}><span />{label}</button>;
+  return <button aria-pressed={checked} className={checked ? "toggle on" : "toggle"} onClick={() => onChange(!checked)}><span />{label}</button>;
 }
 
 function Notice({ text, tone }: { text: string; tone: "danger" | "warn" }) {
-  return <div className={`notice ${tone}`}><WarningCircle size={18} />{text}</div>;
+  return <div role="alert" className={`notice ${tone}`}><WarningCircle size={18} />{text}</div>;
 }
 
 function Loading({ label }: { label: string }) {
-  return <div className="loading"><SpinnerGap className="spin" size={19} />{label}</div>;
+  return <div role="status" className="loading"><span className="loading-indicator" />{label}</div>;
 }
 
 function ChipGroup({ title, values = [] }: { title: string; values?: string[] }) {
-  return <div className="chip-group"><h4>{title}</h4><div>{values.length ? values.map((item) => <span key={item}>{item}</span>) : <span>None yet</span>}</div></div>;
+  return <section className="profile-section"><h3>{title}</h3><ul>{values.length ? values.map((item) => <li key={item}>{item}</li>) : <li>None yet</li>}</ul></section>;
 }
 
 function Markdownish({ text }: { text: string }) {
