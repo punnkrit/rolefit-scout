@@ -819,11 +819,11 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
         ) : (
           <div className="empty-state compact-empty"><Briefcase size={34} /><h2>No matches</h2><p>Adjust filters or rerun search with broader lanes.</p></div>
         )}
-        <div className="pagination">
+        {totalPages > 1 && <div className="pagination">
           <button className="secondary" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>Previous</button>
           <span>{safePage} / {totalPages}</span>
           <button className="secondary" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>Next</button>
-        </div>
+        </div>}
       </section>
 
       <section className="panel job-detail-panel">
