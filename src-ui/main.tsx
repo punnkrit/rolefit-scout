@@ -9,6 +9,7 @@ import {
   DownloadSimple,
   FileText,
   Gauge,
+  GithubLogo,
   MagnifyingGlass,
   MapPin,
   PencilSimple,
@@ -23,6 +24,7 @@ import { demoState, freshDemoState } from "./demo";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === "true";
+const SOURCE_URL = "https://github.com/punnkrit/rolefit-scout";
 const SHOW_COACH_CHAT = false;
 
 type Step = "resume" | "preferences" | "brief" | "strategy" | "results";
@@ -203,6 +205,10 @@ function App() {
   const [health, setHealth] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
+    document.title = STATIC_DEMO ? "RoleFit Scout · Interactive Demo" : "RoleFit Scout";
+  }, []);
+
+  useEffect(() => {
     api<Record<string, any>>("/api/health").then(setHealth).catch(() => setHealth(null));
   }, []);
 
@@ -234,15 +240,14 @@ function App() {
 
   return (
     <div className="app-shell">
-      <div className="grain" />
       <a className="skip-link" href="#main">Skip to content</a>
       <header className="topbar">
         <div>
-          <p className="eyebrow">RoleFit Scout</p>
-          <h1>Turn your experience into a smarter search.</h1>
+          <h1>RoleFit Scout</h1>
+          <p className="product-description">Resume to search strategy to role shortlist.</p>
         </div>
         <div className="status-cluster">
-          {STATIC_DEMO ? <span className="demo-badge"><span /> Interactive demo · fictional data</span> : <>
+          {STATIC_DEMO ? <span className="demo-badge">Demo mode</span> : <>
             <Toggle label="Demo" checked={Boolean(state.demo_mode)} onChange={(demo_mode) => setState({ ...state, demo_mode })} />
             <Toggle
               label="Live search"
@@ -254,8 +259,22 @@ function App() {
               <span>SerpApi {health?.serpapi_configured ? "ready" : "missing"}</span>
             </div>
           </>}
+          <a className="source-link" href={SOURCE_URL} target="_blank" rel="noreferrer">
+            <GithubLogo size={18} weight="fill" /> GitHub source <ArrowSquareOut size={15} />
+          </a>
         </div>
       </header>
+
+      {STATIC_DEMO && <section className="demo-notice" aria-labelledby="demo-title">
+        <div>
+          <h2 id="demo-title">You're exploring an interactive demo.</h2>
+          <p>The candidate, companies, jobs, and fit scores are fictional. Explore the workflow with sample data; this site does not run AI analysis or live job searches.</p>
+        </div>
+        <div className="demo-deploy">
+          <a href={`${SOURCE_URL}#deploy-the-live-version`} target="_blank" rel="noreferrer">Deploy the live version <ArrowSquareOut size={17} /></a>
+          <p>Full source and setup instructions on GitHub.</p>
+        </div>
+      </section>}
 
       <nav className="workflow" aria-label="Workflow">
         {([
@@ -267,7 +286,7 @@ function App() {
         ] as const).map(([key, label, Icon]) => {
           const locked = key !== "resume" && !isUnlocked(key, complete);
           return (
-            <button className={step === key ? "active" : ""} disabled={locked} key={key} onClick={() => setStep(key)}>
+            <button className={step === key ? "active" : ""} aria-current={step === key ? "step" : undefined} disabled={locked} key={key} onClick={() => setStep(key)}>
               <Icon size={18} />
               <span>{label}</span>
               {complete[key] ? <Check size={15} weight="bold" /> : null}
@@ -382,6 +401,7 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
       <section className="panel">
         <p className="eyebrow">Step 01</p>
         <h2>Resume intake</h2>
+        {STATIC_DEMO && <p className="field-hint demo-step-note">Try sample text to walk through the flow. Profile extraction always returns the fictional candidate; it does not analyze your resume.</p>}
         <label
           className={dragActive ? "dropzone drag-active" : "dropzone"}
           onDragEnter={(event) => {
@@ -401,8 +421,8 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
         >
           <FileText size={30} />
           <span>{dragActive ? "Drop resume to upload" : "Drop resume here or browse files"}</span>
-          <small>PDF, DOCX, or TXT</small>
-          <input type="file" accept=".pdf,.docx,.txt" onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} />
+          <small>{STATIC_DEMO ? "TXT only in this demo" : "PDF, DOCX, or TXT"}</small>
+          <input type="file" accept={STATIC_DEMO ? ".txt" : ".pdf,.docx,.txt"} onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} />
         </label>
         <textarea
           value={text}
@@ -411,9 +431,10 @@ function ResumeStep({ state, onState, onExtract, onContinue }: {
             onState({ ...state, resume_text: event.target.value });
           }}
           placeholder="Paste resume text here..."
+          aria-label={STATIC_DEMO ? "Sample resume text" : "Resume text"}
           rows={14}
         />
-        <button className="primary" disabled={!text.trim()} onClick={onExtract}>Extract resume profile</button>
+        <button className="primary" disabled={!text.trim()} onClick={onExtract}>{STATIC_DEMO ? "Load sample profile" : "Extract resume profile"}</button>
       </section>
       <ProfilePanel profile={state.candidate_profile} onContinue={onContinue} />
     </div>
@@ -524,9 +545,9 @@ function BriefStep({ state, coachThinking, onGenerate, onApply, onChat }: {
     return (
       <section className="panel empty-state">
         <PencilSimple size={38} />
-        <h2>Generate the coach brief</h2>
-        <p>The brief turns the resume and constraints into role lanes, scoring guidance, and unresolved questions.</p>
-        <button className="primary" onClick={onGenerate}>Generate coach brief</button>
+        <h2>{STATIC_DEMO ? "Explore a sample brief" : "Generate the coach brief"}</h2>
+        <p>{STATIC_DEMO ? "Load the prepared brief for the fictional candidate. Your edits do not trigger AI generation in this demo." : "The brief turns the resume and constraints into role lanes, scoring guidance, and unresolved questions."}</p>
+        <button className="primary" onClick={onGenerate}>{STATIC_DEMO ? "Load sample brief" : "Generate coach brief"}</button>
       </section>
     );
   }
@@ -622,9 +643,9 @@ function StrategyStep({ state, onBuild, onSearch }: { state: GraphState; onBuild
     return (
       <section className="panel empty-state">
         <Strategy size={38} />
-        <h2>Build the search strategy</h2>
-        <p>The backend will propose query lanes using the approved coach brief and preferences.</p>
-        <button className="primary" onClick={onBuild}>Build search strategy</button>
+        <h2>{STATIC_DEMO ? "Explore a sample strategy" : "Build the search strategy"}</h2>
+        <p>{STATIC_DEMO ? "Load prepared search lanes for the fictional candidate. Live search is available when you deploy the full app." : "Propose search queries using the approved coach brief and preferences."}</p>
+        <button className="primary" onClick={onBuild}>{STATIC_DEMO ? "Load sample strategy" : "Build search strategy"}</button>
       </section>
     );
   }
@@ -638,7 +659,7 @@ function StrategyStep({ state, onBuild, onSearch }: { state: GraphState; onBuild
           <h2>Search strategy</h2>
           <p>{state.search_strategy?.strategy_summary}</p>
         </div>
-        <button className="primary" onClick={() => onSearch(edited)}><MagnifyingGlass size={18} /> Run approved search</button>
+        <button className="primary" onClick={() => onSearch(edited)}><MagnifyingGlass size={18} /> {STATIC_DEMO ? "Show sample results" : "Run approved search"}</button>
       </div>
       <div className="lane-grid">
         {queries.map((query, index) => (
@@ -758,7 +779,7 @@ function ResultsStep({ state, onState }: { state: GraphState; onState: (state: G
 
       <section className="panel match-list-panel">
         <div className="matches-head">
-          <h3>{filtered.length} matches</h3>
+          <h3>{filtered.length} {STATIC_DEMO ? "sample matches" : "matches"}</h3>
           <label>Sort by
             <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
               <option value="score">Match score</option>
@@ -1148,8 +1169,8 @@ function Progress({ state, complete, onStartOver }: { state: GraphState; complet
   const cacheLabel = state.cache_run_label || state.cache_run_id || state.cache_run_path;
   return (
     <section className="panel compact-panel">
-      <p className="eyebrow">Run state</p>
-      <h3>{cacheLabel ? "Cached run" : "Working draft"}</h3>
+      <p className="eyebrow">{STATIC_DEMO ? "Demo progress" : "Progress"}</p>
+      <h3>{STATIC_DEMO ? "Sample candidate" : cacheLabel ? "Saved run" : "Working draft"}</h3>
       <div className="progress-list">
         {Object.entries(complete).map(([key, value]) => <span key={key} className={value ? "done" : ""}>{key}<b>{value ? "ready" : "pending"}</b></span>)}
       </div>
@@ -1172,12 +1193,12 @@ function Replay({ onLoad }: { onLoad: (state: GraphState) => void }) {
   }, []);
   return (
     <section className="panel compact-panel">
-      <p className="eyebrow">Replay</p>
-      <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+      <p className="eyebrow">{STATIC_DEMO ? "Sample scenario" : "Replay"}</p>
+      <select aria-label={STATIC_DEMO ? "Sample scenario" : "Saved run"} value={selected} onChange={(e) => setSelected(e.target.value)}>
         <option value="">Select cached run</option>
         {runs.map((run) => <option key={run.id} value={run.id}>{run.label}</option>)}
       </select>
-      <button className="secondary" disabled={!selected} onClick={async () => onLoad(await api<GraphState>(`/api/runs/load?run_id=${encodeURIComponent(selected)}`))}>Load run</button>
+      <button className="secondary" disabled={!selected} onClick={async () => onLoad(await api<GraphState>(`/api/runs/load?run_id=${encodeURIComponent(selected)}`))}>{STATIC_DEMO ? "Reload sample" : "Load run"}</button>
     </section>
   );
 }
