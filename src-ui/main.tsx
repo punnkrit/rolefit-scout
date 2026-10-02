@@ -273,34 +273,22 @@ function App() {
         </div>
       </section>}
 
-      <nav className="workflow" aria-labelledby="workflow-title">
-        <div className="workflow-heading">
-          <h2 id="workflow-title">Your job-search workflow</h2>
-          <span>Step {(["resume", "preferences", "brief", "strategy", "results"] as Step[]).indexOf(step) + 1} of 5</span>
-        </div>
-        {STATIC_DEMO && <p className="workflow-context">
-          {complete.strategy
-            ? "This fictional candidate is already set up. Review the completed steps or explore the sample matches."
-            : "Explore the five-step workflow using the fictional candidate."}
-        </p>}
+      <nav className="workflow" aria-label="Job-search steps">
         <ol className="workflow-steps">
         {([
-          ["resume", "Resume", STATIC_DEMO ? "Sample resume loaded" : "Profile extracted", "Add your resume"],
-          ["preferences", "Preferences", "Preferences set", "Set your preferences"],
-          ["brief", "Coach brief", STATIC_DEMO ? "Sample brief ready" : "Brief ready", "Review your brief"],
-          ["strategy", "Strategy", "Search plan ready", "Build your search plan"],
-          ["results", "Results", STATIC_DEMO ? "Sample matches ready" : `${state.scored_jobs?.length || 0} matches ready`, "Run your search"]
-        ] as const).map(([key, label, readyLabel, pendingLabel], index) => {
+          ["resume", "Resume"],
+          ["preferences", "Preferences"],
+          ["brief", "Coach brief"],
+          ["strategy", "Strategy"],
+          ["results", "Results"]
+        ] as const).map(([key, label], index) => {
           const locked = key !== "resume" && !isUnlocked(key, complete);
-          const status = complete[key] ? readyLabel : pendingLabel;
           return (
             <li key={key} className={complete[key] ? "complete" : ""}>
-              <button className={step === key ? "active" : ""} aria-label={`Step ${index + 1}: ${label}. ${status}${complete[key] ? ". Completed" : ""}`} aria-current={step === key ? "step" : undefined} disabled={locked} onClick={() => setStep(key)}>
+              <button className={step === key ? "active" : ""} aria-label={`Step ${index + 1}: ${label}. ${complete[key] ? "Completed" : "Not completed"}`} aria-current={step === key ? "step" : undefined} disabled={locked} onClick={() => setStep(key)}>
                 <span className="workflow-number" aria-hidden="true">{index + 1}</span>
-                <span className="workflow-copy">
-                  <span className="workflow-label">{label}</span>
-                  <span className="workflow-status">{complete[key] && <Check size={13} weight="bold" aria-hidden="true" />}{status}</span>
-                </span>
+                <span className="workflow-label">{label}</span>
+                {complete[key] && <Check className="workflow-check" size={15} weight="bold" aria-hidden="true" />}
               </button>
               {index < 4 && <span className="workflow-connector" aria-hidden="true">›</span>}
             </li>
