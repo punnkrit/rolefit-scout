@@ -119,14 +119,32 @@ p { color: var(--muted); line-height: 1.6; }
 .toggle.on span { background: var(--accent); }
 .toggle:active, .primary:active, .secondary:active, .workflow button:active { transform: translateY(1px) scale(0.99); }
 .workflow {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--line);
 }
+.workflow-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0 10px;
+}
+.workflow-heading h2 { margin: 0; font-size: 1rem; letter-spacing: 0; }
+.workflow-heading > span { color: var(--accent); font-size: 0.8rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.workflow-context { margin: 0 0 14px; font-size: 0.875rem; }
+.workflow-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.workflow-steps > li { position: relative; min-width: 0; }
 .workflow button {
-  min-height: 50px;
+  width: 100%;
+  min-height: 82px;
+  padding: 14px 10px;
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -134,8 +152,8 @@ p { color: var(--muted); line-height: 1.6; }
   background: transparent;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 9px;
+  text-align: left;
+  gap: 12px;
   transition: background 220ms ease, color 220ms ease, border-color 220ms ease;
 }
 .workflow button:hover {
@@ -143,6 +161,24 @@ p { color: var(--muted); line-height: 1.6; }
   color: var(--text);
 }
 .workflow button.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(211, 168, 91, 0.04); }
+.workflow-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font: 0.8rem "Roboto Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+.workflow-copy { display: grid; gap: 4px; min-width: 0; }
+.workflow-label { color: var(--text); font-weight: 500; }
+.workflow-status { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 0.75rem; line-height: 1.4; }
+.workflow-status svg { flex-shrink: 0; color: var(--accent); }
+.workflow-steps > li.complete .workflow-number { color: var(--accent); border-color: rgba(211, 168, 91, 0.45); }
+.workflow button.active .workflow-number { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.workflow button.active .workflow-label { color: var(--accent); }
+.workflow-connector { position: absolute; right: -14px; top: 21px; color: var(--muted); font-size: 1.4rem; pointer-events: none; }
 .main-grid {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
@@ -1111,9 +1147,12 @@ input[type="range"] { accent-color: var(--accent); padding: 0; }
 }
 @media (max-width: 720px) {
   .app-shell { padding: 18px 12px 40px; }
-  .workflow { display: flex; overflow-x: auto; }
-  .workflow button { flex: 0 0 auto; padding: 0 14px; min-height: 48px; }
-  .workflow button > svg:last-child:not(:first-child) { display: none; }
+  .workflow-heading { align-items: baseline; }
+  .workflow-heading h2 { font-size: 0.9rem; }
+  .workflow-steps { grid-template-columns: 1fr; gap: 4px; }
+  .workflow button { min-height: 62px; padding: 8px 12px; }
+  .workflow-copy { gap: 2px; }
+  .workflow-connector { top: auto; bottom: -7px; left: 26px; right: auto; font-size: 1rem; line-height: 1; transform: rotate(90deg); }
   .briefing-panel { grid-template-columns: 1fr; }
   .demo-notice { padding: 16px 0; }
   .coach-readout > div { grid-template-columns: 1fr; gap: 8px; }
